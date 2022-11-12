@@ -11,6 +11,7 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.elasticsearch.client.RestClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -44,4 +45,8 @@ public class ElasticsearchPlaygroundApplication {
         return new ElasticsearchClient(transport);
     }
 
+    @Bean
+    CommandLineRunner commandLineRunner() {
+        return args -> System.setProperty("com.sun.net.ssl.checkRevocation", "false");
+    }
 }
