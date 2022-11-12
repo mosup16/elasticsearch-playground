@@ -4,6 +4,8 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -27,6 +29,7 @@ public class ElasticsearchPlaygroundApplication {
 
     @Bean
     public ElasticsearchClient elasticsearchClient(
+            JacksonJsonpMapper jacksonJsonpMapper,
             @Value("${application.elasticsearch.hostname}") String hostname,
             @Value("${application.elasticsearch.port}") int port,
             @Value("${application.elasticsearch.username}") String username,
@@ -40,7 +43,7 @@ public class ElasticsearchPlaygroundApplication {
                 .setHttpClientConfigCallback(cb -> cb.setDefaultCredentialsProvider(credentialsProvider))
                 .build();
 
-        ElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
+        ElasticsearchTransport transport = new RestClientTransport(restClient, jacksonJsonpMapper);
 
         return new ElasticsearchClient(transport);
     }
@@ -48,5 +51,14 @@ public class ElasticsearchPlaygroundApplication {
     @Bean
     CommandLineRunner commandLineRunner() {
         return args -> System.setProperty("com.sun.net.ssl.checkRevocation", "false");
+    }
+
+    @Bean
+    public JacksonJsonpMapper jacksonJsonpMapper() {
+        JacksonJsonpMapper mapper = new JacksonJsonpMapper();
+        mapper.objectMapper()
+                .registerModule(new JavaTimeModule())
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return mapper;
     }
 }
