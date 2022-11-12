@@ -1,1 +1,6 @@
-
+application:
+  elasticsearch:
+    hostname: "bf862b88d51b4f38bc659163853f2dbc.us-central1.gcp.cloud.es.io"
+    port: 443
+    username: "elastic"
+    password: "fJZrEPzrN9PQqD9uCo3gcxGV"
