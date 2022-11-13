@@ -2,6 +2,7 @@ package com.mo16.elasticsearchplayground;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,4 +47,13 @@ public class ElasticSearchTest {
 
         System.out.println(response);
     }
+
+    @Test
+    @Disabled
+    void deleteIndex() throws IOException {
+        DeleteIndexResponse response = elasticsearch.indices()
+                .delete(deleteReq -> deleteReq.index("fake-cpu-usage"));
+        System.out.println(response);
+    }
+
 }
