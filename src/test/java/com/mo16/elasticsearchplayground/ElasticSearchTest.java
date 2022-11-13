@@ -2,14 +2,18 @@ package com.mo16.elasticsearchplayground;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
 
@@ -56,4 +60,29 @@ public class ElasticSearchTest {
         System.out.println(response);
     }
 
+    @Test
+    @Disabled
+    void createFakeCpuUsageIndex() throws IOException {
+        String mappings = new ObjectMapper().writeValueAsString(
+                new HashMap<>() {{
+                    put("properties", new HashMap<>() {{
+                        put("id", new HashMap<>() {{
+                            put("type", "text");
+                        }});
+                        put("usage", new HashMap<>() {{
+                            put("type", "float");
+                        }});
+                        put("readAt", new HashMap<>() {{
+                            put("type", "date");
+                        }});
+                    }});
+                }}
+        );
+        CreateIndexResponse response = elasticsearch.indices()
+                .create(createReq -> createReq.index("fake-cpu-usage")
+                        .mappings(mappingsBuilder -> mappingsBuilder
+                                .withJson(new StringReader(mappings)))
+                );
+        System.out.println(response);
+    }
 }
