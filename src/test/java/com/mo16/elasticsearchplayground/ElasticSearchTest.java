@@ -83,6 +83,34 @@ public class ElasticSearchTest {
 
     @Test
     @Disabled
+    void send500FakeCPUUsageReadDocuments() {
+        record CpuUsage(UUID id, double usage, LocalDateTime readAt) {
+        }
+
+        long start = System.currentTimeMillis();
+        List<IndexResponse> indexResponses = IntStream.range(0, 500)
+                .mapToObj(value -> new CpuUsage(UUID.randomUUID(),
+                        new Random().nextDouble(100), LocalDateTime.now()))
+                .parallel()
+                .map(cpuUsage -> {
+                            try {
+                                return elasticsearch.index(i -> i.index("fake-cpu-usage")
+                                        .document(cpuUsage)
+                                        .id(cpuUsage.id().toString())
+                                );
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                ).toList();
+
+        System.out.println(indexResponses);
+
+        System.out.println("taken time = " + (System.currentTimeMillis() - start));
+    }
+
+    @Test
+    @Disabled
     void deleteIndex() throws IOException {
         DeleteIndexResponse response = elasticsearch.indices()
                 .delete(deleteReq -> deleteReq.index("fake-cpu-usage"));
