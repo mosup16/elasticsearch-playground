@@ -1,7 +1,9 @@
 package com.mo16.elasticsearchplayground;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.BulkResponse;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import co.elastic.clients.elasticsearch.indices.DeleteIndexResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,8 +16,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 @SpringBootTest
 public class ElasticSearchTest {
@@ -50,6 +54,31 @@ public class ElasticSearchTest {
         });
 
         System.out.println(response);
+    }
+
+    @Test
+    @Disabled
+    void bulkSend100000FakeCPUUsageReadDocument() throws IOException {
+        record CpuUsage(UUID id, double usage, LocalDateTime readAt) {
+        }
+
+        List<BulkOperation> bulkOperations = IntStream.range(0, 100000)
+                .mapToObj(value -> new CpuUsage(UUID.randomUUID(),
+                        new Random().nextDouble(100), LocalDateTime.now()))
+                .map(cpuUsage -> BulkOperation.of(o ->
+                                o.index(i -> i.index("fake-cpu-usage")
+                                        .document(cpuUsage)
+                                        .id(cpuUsage.id().toString())
+                                )
+                        )
+                ).toList();
+
+        long start = System.currentTimeMillis();
+
+        BulkResponse response = elasticsearch.bulk(b -> b.operations(bulkOperations));
+        System.out.println(response);
+
+        System.out.println("taken time = " + (System.currentTimeMillis() - start));
     }
 
     @Test
